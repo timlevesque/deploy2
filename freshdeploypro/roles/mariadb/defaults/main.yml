@@ -1,0 +1,13 @@
+mariadb_binary_logging_disabled: true
+mariadb_keyserver_fingerprint: "0xF1656F24C74CD1D8"
+mariadb_mirror: sfo1.mirrors.digitalocean.com
+mariadb_version: "10.4"
+mariadb_dist: bionic
+mysql_root_user: root
+
+sites_using_remote_db: "[{% for name, site in wordpress_sites.iteritems() if site.env is defined and site.env.db_host | default('localhost') != 'localhost' %}'{{ name }}',{% endfor %}]"
+
+
+#sudo apt-get install software-properties-common
+#sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+#sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.4/ubuntu bionic main'

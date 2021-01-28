@@ -1,0 +1,53 @@
+---
+- name: Add MariaDB MySQL apt-key
+  run_once: true
+  apt_key:
+    url: "http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search={{ mariadb_keyserver_fingerprint }}"
+    state: present
+
+- name: Add MariaDB MySQL deb and deb-src
+  run_once: true
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  with_items:
+    - "deb [arch=amd64,i386,ppc64el] http://{{ mariadb_mirror }}/mariadb/repo/{{ mariadb_version }}/ubuntu {{ mariadb_dist | default(ansible_distribution_release) }} main"
+    - "deb-src http://{{ mariadb_mirror }}/mariadb/repo/{{ mariadb_version }}/ubuntu {{ mariadb_dist | default(ansible_distribution_release) }} main"
+
+- name: Install MySQL client
+  run_once: true
+  apt:
+    name: mariadb-client
+    state: present
+    force_apt_get: yes
+
+- block:
+  - name: Install MariaDB MySQL server
+    run_once: true
+    apt:
+      name: mariadb-server
+      state: present
+      force_apt_get: yes
+
+  - name: Disable MariaDB binary logging
+    template:
+      src: disable-binary-logging.cnf
+      dest: /etc/mysql/conf.d
+      owner: root
+      group: root
+    when: mariadb_binary_logging_disabled
+
+  - name: Restart MariaDB MySQL Server
+    service:
+      name: mysql
+      state: restarted
+      enabled: true
+
+  - name: Copy .my.cnf file for later modification
+    run_once: true
+    template:
+      src: my.cnf.j2
+      dest: ~/.my.cnf
+      owner: root
+      group: root
+      mode: 0600

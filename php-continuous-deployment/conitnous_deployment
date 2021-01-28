@@ -1,0 +1,70 @@
+## Set up the SSH key and repo ##
+
+1. Log into your servers terminal.
+
+2. Create an ssh key for the system user (apache or www-data)
+sudo mkdir /var/www/.ssh
+sudo chown -R www-data:www-data /var/www/.ssh/
+
+3. Generate a deploy key for apache user
+sudo -Hu www-data ssh-keygen -t rsa 
+choose "no passphrase"
+
+4. show the key in the terminal
+sudo cat /var/www/.ssh/id_rsa.pub
+
+and copy it to your clipboard.
+
+5. Login to bit bucket and go to the repo you want to set up for continuous deployment.
+
+6. click on settings > Access Keys > Add Key.
+
+7. give the key a meaningful name (I usually pick a name associated with the server that generated the key), paste the key into the key field and click the "add Key" button.
+
+8. Go back to your server terminal and clone into a tmp directory to force "known_host" response
+sudo -Hu www-data git clone git@bitbucket.org:hoagdev/birthing.git /sites/temp
+
+agree to any prompts.
+
+9. remove the tmp directory 
+sudo rm -r /sites/temp 
+
+10. get the php deployment script from here:
+https://github.com/markomarkovic/simple-php-git-deploy 
+
+and it to  /sites/[site-name]/public/deploy/
+
+11. rename deploy-config.example.php to deploy-config.php
+
+12. edit the following lines:
+
+- define('SECRET_ACCESS_TOKEN', 'BetterChangeMeNowOrSufferTheConsequences');
+- define('REMOTE_REPOSITORY', 'https://github.com/markomarkovic/simple-php-git-deploy.git'); chnge to SSH format (i.e. - git@bitbucket.org:markomarkovic/simple-php-git-deploy.git
+- define('BRANCH', 'master'); to the branch you want to pull from. Usually 'dev' or 'master'
+- define('TARGET_DIR', '/tmp/simple-php-git-deploy/'); usually /sites/[site-name]/public/
+- define('EXCLUDE', serialize(array(
+	'.git',
+))); usually a comma seperated list of files and directories from the repo you don't want deployed on the server. For example, '/db', '/provision'
+
+save the file.
+
+13. set permissions for the deployment folder (this will reset the permissions for all sites within the server back to system ownership.
+
+sudo chown -R www-data:www-data /sites
+sudo chmod 2755 /sites
+sudo chgrp -R www-data /sites
+sudo chmod -R g+w /sites
+sudo find /sites -type f -exec chmod ug+rw {} +
+
+14. Create the webhook in bitbucket.
+Go back to your bitbucket repo and click on settings > web hooks > Add webhooks.
+
+15. Set the following:
+- title: a meangingful title like 'dev deploy'
+- url: This is the path to the deployment script we setup early. something like, 'https://website.com/deploy/deploy.php?sat=SecretAccessToken'
+- Status: Active
+- SSL/TLS: keep unchecked (I haven't messed with this much.)
+- Triggers: if this is a dev deployment, we want the repo to push any new changes to the server. Therefore, we want to select the "Repository push" radio button.
+If this is a deployment script to a production server, we want to select "choose from a full list of triggers", uncheck "Push" and select "Merged". This will only triger when the dev branch is merged with master.
+
+Click the "save" button

@@ -1,0 +1,45 @@
+website root hoagconciergemedicine.com
+
+
+Step 1:
+sudo apt-get update
+sudo apt-get install letsencrypt
+
+Step : 2
+sudo letsencrypt certonly -a webroot --webroot-path=/sites/hoagconciergemedicine.com/public/ -d hoagconciergemedicine.com -d www.hoagconciergemedicine.com
+
+
+sudo ls -l /etc/letsencrypt/live/hoagconciergemedicine.com
+
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+
+Step 3: 
+sudo nano /etc/nginx/server/ssl-hoagconciergemedicine.com.conf
+
+ssl_certificate /etc/letsencrypt/live/hoagconciergemedicine.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/hoagconciergemedicine.com/privkey.pem;
+
+Step 4
+sudo nano /etc/nginx/sites-available/hoagconciergemedicine.com
+
+comment out
+    listen 80;
+    listen [::]:80;
+uncomment
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    include /etc/nginx/global/server/ssl-hoagconciergemedicine.com.conf
+    include snippets/ssl-params.conf;
+    force lowercase section
+
+sudo nginx -t
+
+sudo systemctl restart nginx
+
+
+Step 7: Set up auto renew cron job - 
+
+sudo crontab -e
+
+30 2 * * 1 /usr/bin/letsencrypt renew >> /var/log/le-renew.log
+35 2 * * 1 /bin/systemctl reload nginx

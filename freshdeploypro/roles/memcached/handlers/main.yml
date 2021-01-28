@@ -1,0 +1,4 @@
+---
+
+- name: memcached restart
+  service: name=php7.3-fpm state=restarted

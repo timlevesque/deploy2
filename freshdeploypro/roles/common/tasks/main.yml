@@ -1,0 +1,90 @@
+---
+
+- name: Install a list of packages
+  run_once: true
+  become: true
+  apt:
+    name: "{{ packages }}"
+    force_apt_get: yes
+  vars:
+    packages:
+    - python3
+    - python3-apt
+    - autojump
+    - autoconf
+    - automake
+    - bc 
+    - bison 
+    - build-essential
+    - ccache 
+    - cmake
+    - curl
+    - dbus
+    - dh-systemd 
+    - flex 
+    - fontconfig-config
+    - fonts-dejavu-core
+    - gcc 
+    - geoip-bin 
+    - libgeoip-dev
+    - google-perftools 
+    - git-core
+    - g++ 
+    - icu-devtools 
+    - libfontconfig1 
+    - libgd-dev
+    - libgd3
+    - libjbig0 
+    - libjpeg-turbo8 
+    - libjpeg8 
+    - libperl-dev 
+    - libpcre3
+    - libpcre3-dev
+    - libssl-dev
+    - libtiff5 
+    # - libvpx3 not availble in 1804
+    - libxpm4 
+    - libxslt1.1 
+    - libxslt1-dev
+    - libxml2
+    - nginx-common
+    - make 
+    - nano 
+    - perl 
+    - pkg-config
+    - python3-pycurl
+    - python3-mysqldb
+    # - python-software-properties not availabe in 1804
+    - siege
+    - software-properties-common 
+    - systemtap-sdt-dev 
+    - subversion
+    - traceroute
+    - unzip
+    - uuid-dev
+    - webp 
+    - wget 
+    - xtrans-dev 
+    - zip 
+    - zlib1g-dev 
+    - zlibc
+
+- name: Get Composer
+  run_once: true
+  get_url: url=https://getcomposer.org/composer.phar dest=/usr/local/bin/composer mode=0755 validate_certs=no
+
+- name: Install PsySH
+  run_once: true
+  get_url: url=http://psysh.org/psysh dest=/usr/local/bin/psysh mode=0755
+
+- name: Install Boris
+  run_once: true
+  get_url: url=https://github.com/d11wtq/boris/releases/download/v1.0.8/boris.phar dest=/usr/local/bin/boris mode=0755 validate_certs=no
+
+- name: Fix the stdin bug, step 1
+  run_once: true
+  lineinfile: dest=/root/.profile line="mesg n" state=absent
+
+- name: Fix the stdin bug, step 2
+  run_once: true
+  lineinfile: dest=/root/.profile line="tty -s && mesg n"

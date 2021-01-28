@@ -1,0 +1,63 @@
+---
+- name: "Add repository for php7.3."
+  run_once: true
+  apt_repository: 
+    repo="ppa:ondrej/php" 
+    update_cache=yes
+  become: true
+  become_user: root
+#- name: Add php7.3 PPA
+#  apt_repository:
+#    repo: "ppa:ondrej/php"
+#    update_cache: yes
+
+- name: Install php7.3
+  run_once: true
+  become: true
+  apt:
+    name: "{{ packages }}"
+    force_apt_get: yes
+  vars:
+    packages:
+      - php7.3-cli
+      - php7.3-common
+      - php7.3-curl
+      - php7.3-dev
+      - php7.3-fpm
+      - php7.3-gd
+      - php7.3-memcached
+      - php7.3-mbstring
+      # - php7.3-mcrypt - not supported
+      - php7.3-mysql
+      - php7.3-opcache
+      - php7.3-xml
+      - php7.3-xmlrpc
+      - php7.3-zip
+      - php7.3-json
+      - php7.3-ldap
+      - php7.3-tidy
+      - php7.3-recode  
+
+- name: Start php7.3-fpm service
+  service:
+    name: php7.3-fpm
+    state: started
+    enabled: true
+
+- name: Create socket directory
+  file:
+    path: /var/run/php7.3-fpm/
+    state: directory
+
+#- name: Disable default pool
+#  command: mv /etc/php/7.0/fpm/pool.d/www.conf /etc/php/7.0/fpm/pool.d/www.disabled
+#  args:
+#    creates: /etc/php/7.0/fpm/pool.d/www.disabled
+#  when: disable_default_pool
+#  notify: reload php-fpm
+
+- name: PHP configuration file
+  template:
+    src: php.ini.j2
+    dest: /etc/php/7.3/fpm/php.ini
+  notify: reload php-fpm

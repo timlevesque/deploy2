@@ -1,0 +1,12 @@
+---
+- name: Install ssmtp
+  run_once: true
+  apt:
+    name: ssmtp
+    force_apt_get: yes
+    state: present
+
+- name: ssmtp configuration
+  template:
+    src: ssmtp.conf.j2
+    dest: /etc/ssmtp/ssmtp.conf

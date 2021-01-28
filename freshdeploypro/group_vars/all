@@ -1,0 +1,30 @@
+---
+www_root: /sites
+apt_cache_valid_time: 86400
+default_timezone: America/Los_Angeles
+phpmyadmin_version: 4.3.6-english
+phpmemcachedadmin_version: 1.2.2-r262
+wpcli_version: WP-CLI 0.17.1
+web_user: www-data
+web_group: www-data
+ip_whitelist:
+  - "{{ lookup('pipe', 'curl -4 -s https://api.ipify.org') }}"
+
+ferm_input_list:
+  - type: dport_accept
+    dport: [http, https]
+    filename: nginx_accept
+  - type: dport_accept
+    dport: [ssh]
+    saddr: "{{ ip_whitelist }}"
+  - type: dport_limit
+    dport: [ssh]
+    seconds: 300
+    hits: 20
+
+#some suggested services are sendgrid, mailgun, amazon sms
+mail_smtp_server: smtp.mail.com:587
+mail_admin: admin@email.com
+mail_hostname: primarydomain.com
+mail_user: mail_username
+mail_password: mail_password
